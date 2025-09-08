@@ -1,0 +1,60 @@
+# Enable URL rewriting
+RewriteEngine On
+
+# Handle API routes (send everything to index.php if not a file/folder)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# CORS Headers (requires mod_headers)
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+    Header always set Access-Control-Max-Age "3600"
+
+    # Security headers
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options DENY
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Hide PHP version
+    Header unset X-Powered-By
+</IfModule>
+
+# Handle preflight OPTIONS requests
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
+
+# PHP Configuration (may require AllowOverride Options in Apache config)
+php_value upload_max_filesize 10M
+php_value post_max_size 10M
+php_value max_execution_time 300
+php_value memory_limit 256M
+
+# Prevent access to sensitive files
+<FilesMatch "\.(sql|log|env)$">
+    Require all denied
+</FilesMatch>
+
+# Enable compression (requires mod_deflate)
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/json
+</IfModule>
+
+# Environment variables (requires mod_env)
+SetEnv DB_HOST "localhost"
+SetEnv DB_NAME "islamic_trivia_game"
+SetEnv DB_USER "root"
+SetEnv DB_PASS ""
+SetEnv JWT_SECRET "yqT5onbZAc86EXYk0YGKH82TFKKTyILVdbJZDn_9lcPo_OhfJC0kb4DCL6NiVDMspzI5dBqeVG-6MQXz01Boig"
